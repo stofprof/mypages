@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stef EPG Generator</title>
+    <meta name="description" content="Convert Xtream M3U URLs to XMLTV EPG instantly. Single and Bulk processing supported.">
+    <style>
+        :root {
+            /* Color Palette - Dark Mode Premium */
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --success: #10b981;
+            --error: #ef4444;
+            --border: #334155;
+            --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
+            --radius: 12px;
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            outline: none;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* --- Layout & Typography --- */
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            margin-top: 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .logo svg {
+            width: 40px;
+            height: 40px;
+            fill: var(--primary);
+            filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 400;
+        }
+
+        /* --- Tabs --- */
+        .tabs {
+            display: flex;
+            background: var(--bg-card);
+            padding: 5px;
+            border-radius: var(--radius);
+            margin-bottom: 25px;
+            border: 1px solid var(--border);
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--bg-input);
+            color: var(--text-main);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* --- Cards & Forms --- */
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid transparent;
+            color: var(--text-main);
+            padding: 14px;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-family: monospace;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 150px;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: #64748b;
+        }
+
+        /* --- Buttons --- */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: var(--radius);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+        
+        /* Important: Ensure buttons aren't treated as submit buttons */
+        button {
+            font-family: inherit;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: var(--bg-input);
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: var(--bg-input);
+            color: var(--text-main);
+            margin-top: 10px;
+        }
+        
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        .btn-icon {
+            padding: 8px;
+            width: auto;
+            background: transparent;
+            color: var(--text-muted);
+        }
+        
+        .btn-icon:hover {
+            color: var(--text-main);
+        }
+
+        /* --- File Upload --- */
+        .file-upload-wrapper {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        
+        .file-upload-input {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* --- Output Areas --- */
+        .output-area {
+            margin-top: 25px;
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .output-area.visible {
+            display: block;
+        }
+
+        .result-box {
+            background: rgba(0,0,0,0.2);
+            padding: 16px;
+            border-radius: var(--radius);
+            font-family: monospace;
+            word-break: break-all;
+            color: #a5f3fc;
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .result-text {
+            flex: 1;
+            overflow-x: auto;
+        }
+
+        .copy-btn {
+            background: var(--bg-input);
+            border: none;
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .copy-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        /* --- Bulk Results --- */
+        .bulk-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .bulk-stat-item span {
+            color: var(--text-main);
+            font-weight: bold;
+        }
+
+        .result-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: rgba(0,0,0,0.1);
+        }
+
+        .result-item {
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85rem;
+            display: grid;
+            grid-template-columns: 20px 1fr;
+            gap: 10px;
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .status-icon {
+            font-size: 12px;
+        }
+        .status-icon.valid { color: var(--success); }
+        .status-icon.invalid { color: var(--error); }
+
+        .result-content {
+            word-break: break-all;
+            color: var(--text-muted);
+        }
+        .result-content strong {
+            color: var(--text-main);
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .export-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .export-btn {
+            background: var(--bg-input);
+            color: var(--text-main);
+            border: none;
+            padding: 10px 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .export-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* --- Features Footer --- */
+        .features {
+            margin-top: 40px;
+            text-align: left;
+        }
+        
+        .features h3 {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            color: var(--text-main);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        @media(min-width: 600px) {
+            .feature-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .feature-item {
+            background: rgba(255,255,255,0.03);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feature-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .footer-note {
+            margin-top: 30px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        /* --- Utilities --- */
+        .error-msg {
+            color: var(--error);
+            font-size: 0.85rem;
+            margin-top: 8px;
+            display: none;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--bg-card);
+            border: 1px solid var(--success);
+            color: var(--success);
+            padding: 12px 24px;
+            border-radius: 50px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            font-weight: 500;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hidden { display: none !important; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="logo">
+            <!-- Lightning Icon -->
+            <svg viewBox="0 0 24 24">
+                <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" />
+            </svg>
+            <h1>Stef EPG Generator</h1>
+        </div>
+        <p class="subtitle">Convert Xtream M3U URLs to XMLTV EPG — Single or Bulk</p>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="tabs">
+        <button class="tab-btn active" onclick="switchTab('single')">Single URL</button>
+        <button class="tab-btn" onclick="switchTab('bulk')">Bulk Convert</button>
+    </nav>
+
+    <main>
+        <!-- SINGLE URL SECTION -->
+        <section id="single-section" class="card">
+            <div class="input-group">
+                <label for="m3u-input">Xtream M3U URL</label>
+                <input type="text" id="m3u-input" placeholder="http://example.com:8080/get.php?username=...&password=..." autocomplete="off">
+                <div class="error-msg" id="single-error">
+                    <svg style="width:14px;height:14px;fill:currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                    Invalid URL: Username and Password are required.
+                </div>
+            </div>
+            <button id="btn-generate-single" class="btn btn-primary" disabled>
+                <span class="btn-text">Generate EPG</span>
+                <div class="spinner"></div>
+            </button>
+
+            <!-- Single Output -->
+            <div id="single-result" class="output-area">
+                <label>Generated XMLTV URL</label>
+                <div class="result-box">
+                    <span class="result-text" id="single-output-text">...</span>
+                    <button class="copy-btn" onclick="copyToClipboard(document.getElementById('single-output-text').innerText)" title="Copy to Clipboard">
+                        <svg viewBox="0 0 24 24"><path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z"/></svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- BULK CONVERT SECTION -->
+        <section id="bulk-section" class="card hidden">
+            <div class="file-upload-wrapper">
+                <button type="button" class="btn btn-secondary">
+                    <svg style="width:18px;height:18px;fill:currentColor; margin-right:5px" viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>
+                    Upload File (TXT/CSV)
+                </button>
+                <input type="file" id="file-input" class="file-upload-input" accept=".txt,.csv">
+            </div>
+            
+            <div class="input-group">
+                <label for="bulk-input">Bulk URLs (one per line)</label>
+                <textarea id="bulk-input" placeholder="Paste multiple Xtream M3U URLs here, one per line..."></textarea>
+            </div>
+
+            <button id="btn-generate-bulk" class="btn btn-primary" onclick="processBulk()">
+                <span class="btn-text">Convert All URLs</span>
+                <div class="spinner"></div>
+            </button>
+
+            <!-- Bulk Output -->
+            <div id="bulk-result" class="output-area">
+                <div class="bulk-stats">
+                    <div class="bulk-stat-item">Total: <span id="stat-total">0</span></div>
+                    <div class="bulk-stat-item">Valid: <span id="stat-valid" style="color:var(--success)">0</span></div>
+                    <div class="bulk-stat-item">Invalid: <span id="stat-invalid" style="color:var(--error)">0</span></div>
+                </div>
+
+                <div class="result-list" id="bulk-list-container">
+                    <!-- Results injected here -->
+                </div>
+
+                <div style="margin-top:15px;">
+                    <button type="button" class="btn btn-secondary" onclick="copyAllValid()">
+                        Copy All Valid URLs
+                    </button>
+                    <div class="export-actions" style="margin-top:10px;">
+                        <button type="button" class="export-btn" onclick="downloadExport('txt')">
+                            <svg style="width:20px;height:20px;fill:currentColor" viewBox="0 0 24 24"><path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2ZM16 18H8V16H16V18ZM16 14H8V12H16V14ZM13 9V3.5L18.5 9H13Z"/></svg>
+                            Export TXT
+                        </button>
+                        <button type="button" class="export-btn" onclick="downloadExport('csv')">
+                            <svg style="width:20px;height:20px;fill:currentColor" viewBox="0 0 24 24"><path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2ZM16 18H8V16H16V18ZM16 14H8V12H16V14ZM13 9V3.5L18.5 9H13Z"/></svg>
+                            Export CSV
+                        </button>
+                        <button type="button" class="export-btn" onclick="downloadExport('json')">
+                            <svg style="width:20px;height:20px;fill:currentColor" viewBox="0 0 24 24"><path d="M5 3H19V5H5V3ZM5 19H19V21H5V19ZM5 7H19V9H5V7ZM5 11H19V13H5V11ZM5 15H19V17H5V15Z"/></svg>
+                            Export JSON
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FEATURES SECTION -->
+        <section class="features">
+            <h3>Features & How it works</h3>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <div class="feature-title">
+                        <svg style="width:18px;height:18px;fill:currentColor" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                        Single Conversion
+                    </div>
+                    <div class="feature-desc">Instantly parse and convert individual Xtream codes into XMLTV format with validation.</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-title">
+                        <svg style="width:18px;height:18px;fill:currentColor" viewBox="0 0 24 24"><path d="M4 14h4v-4H4v4zm0 5h4v-4H4v4zM4 9h4V5H4v4zm5 5h12v-4H9v4zm0 5h12v-4H9v4zM9 5v4h12V5H9z"/></svg>
+                        Bulk Processing
+                    </div>
+                    <div class="feature-desc">Convert hundreds of URLs at once by pasting or uploading a text file.</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-title">
+                        <svg style="width:18px;height:18px;fill:currentColor" viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>
+                        File Upload
+                    </div>
+                    <div class="feature-desc">Support for .TXT and .CSV files for quick batch conversions.</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-title">
+                        <svg style="width:18px;height:18px;fill:currentColor" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                        Multiple Exports
+                    </div>
+                    <div class="feature-desc">Download your results in TXT, CSV, or JSON format for easy integration.</div>
+                </div>
+            </div>
+        </section>
+
+        <div class="footer-note">
+            <p>All processing happens locally in your browser. No data is sent to any server.</p>
+        </div>
+    </main>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast">
+    <svg style="width:20px;height:20px;fill:currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+    <span id="toast-msg">Copied to clipboard!</span>
+</div>
+
+<script>
+    /* --- STATE MANAGEMENT --- */
+    const state = {
+        bulkResults: []
+    };
+
+    /* --- DOM ELEMENTS --- */
+    const singleInput = document.getElementById('m3u-input');
+    const singleBtn = document.getElementById('btn-generate-single');
+    const singleError = document.getElementById('single-error');
+    const singleOutputArea = document.getElementById('single-result');
+    const singleOutputText = document.getElementById('single-output-text');
+    
+    const bulkInput = document.getElementById('bulk-input');
+    const bulkBtn = document.getElementById('btn-generate-bulk');
+    const bulkResultArea = document.getElementById('bulk-result');
+    const bulkListContainer = document.getElementById('bulk-list-container');
+    const fileInput = document.getElementById('file-input');
+
+    /* --- INITIALIZATION --- */
+    // Validation Listener for Single Input
+    singleInput.addEventListener('input', () => {
+        const url = singleInput.value.trim();
+        if (isValidXtreamUrl(url)) {
+            singleBtn.disabled = false;
+            singleError.style.display = 'none';
+            singleInput.style.borderColor = 'transparent';
+        } else {
+            singleBtn.disabled = true;
+            if(url.length > 5) {
+                singleInput.style.borderColor = 'var(--error)';
+            } else {
+                singleInput.style.borderColor = 'transparent';
+            }
+        }
+    });
+
+    // File Upload Listener
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            bulkInput.value = e.target.result;
+            showToast('File loaded successfully');
+        };
+        reader.readAsText(file);
+    });
+
+    /* --- CORE LOGIC --- */
+
+    // Parse Xtream URL
+    function generateEpgUrl(m3uUrl) {
+        try {
+            const urlObj = new URL(m3uUrl);
+            const params = new URLSearchParams(urlObj.search);
+            
+            const username = params.get('username');
+            const password = params.get('password');
+            
+            if (!username || !password) {
+                return { success: false, error: 'Missing credentials' };
+            }
+
+            // Construct base URL (protocol + hostname + port)
+            const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
+            
+            // Build EPG URL
+            const epgUrl = `${baseUrl}/xmltv.php?username=${username}&password=${password}`;
+            
+            return { success: true, url: epgUrl, original: m3uUrl };
+        } catch (e) {
+            return { success: false, error: 'Invalid URL Format' };
+        }
+    }
+
+    function isValidXtreamUrl(str) {
+        if (!str) return false;
+        try {
+            const url = new URL(str);
+            const params = new URLSearchParams(url.search);
+            return params.has('username') && params.has('password');
+        } catch {
+            return false;
+        }
+    }
+
+    /* --- SINGLE CONVERSION HANDLERS --- */
+    
+    singleBtn.addEventListener('click', () => {
+        const inputUrl = singleInput.value.trim();
+        if (!isValidXtreamUrl(inputUrl)) {
+            singleError.style.display = 'flex';
+            return;
+        }
+
+        // Simulate loading for UI smoothness
+        setLoading(singleBtn, true);
+
+        setTimeout(() => {
+            const result = generateEpgUrl(inputUrl);
+            setLoading(singleBtn, false);
+
+            if (result.success) {
+                singleOutputText.innerText = result.url;
+                singleOutputArea.classList.add('visible');
+                
+                // Auto-select logic
+                const range = document.createRange();
+                range.selectNodeContents(singleOutputText);
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(range);
+            } else {
+                singleError.style.display = 'flex';
+            }
+        }, 400); 
+    });
+
+    /* --- BULK CONVERSION HANDLERS --- */
+
+    function processBulk() {
+        const text = bulkInput.value.trim();
+        if (!text) {
+            showToast('Please enter URLs or upload a file');
+            return;
+        }
+
+        setLoading(bulkBtn, true);
+        bulkResultArea.classList.remove('visible');
+
+        setTimeout(() => {
+            const lines = text.split(/\r?\n/);
+            const results = [];
+            let validCount = 0;
+            let invalidCount = 0;
+
+            lines.forEach((line) => {
+                const trimmedLine = line.trim();
+                if (!trimmedLine) return;
+
+                const res = generateEpgUrl(trimmedLine);
+                if (res.success) {
+                    validCount++;
+                    results.push({
+                        status: 'valid',
+                        original: res.original,
+                        converted: res.url
+                    });
+                } else {
+                    invalidCount++;
+                    results.push({
+                        status: 'invalid',
+                        original: trimmedLine,
+                        error: res.error
+                    });
+                }
+            });
+
+            state.bulkResults = results;
+            renderBulkResults(results, validCount, invalidCount);
+            setLoading(bulkBtn, false);
+            bulkResultArea.classList.add('visible');
+        }, 600);
+    }
+
+    function renderBulkResults(results, valid, invalid) {
+        document.getElementById('stat-total').innerText = results.length;
+        document.getElementById('stat-valid').innerText = valid;
+        document.getElementById('stat-invalid').innerText = invalid;
+        
+        bulkListContainer.innerHTML = '';
+
+        results.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'result-item';
+            
+            const iconClass = item.status === 'valid' ? 'valid' : 'invalid';
+            const iconSymbol = item.status === 'valid' ? '✔' : '✖';
+            
+            if (item.status === 'valid') {
+                div.innerHTML = `
+                    <div class="status-icon ${iconClass}">${iconSymbol}</div>
+                    <div class="result-content">
+                        <strong>${item.converted}</strong>
+                        <span style="font-size:0.75rem; opacity:0.7">Src: ${truncate(item.original, 40)}</span>
+                    </div>
+                `;
+            } else {
+                div.innerHTML = `
+                    <div class="status-icon ${iconClass}">${iconSymbol}</div>
+                    <div class="result-content">
+                        <strong style="color:var(--error)">${item.error}</strong>
+                        <span style="font-size:0.75rem; opacity:0.7">${truncate(item.original, 40)}</span>
+                    </div>
+                `;
+            }
+            bulkListContainer.appendChild(div);
+        });
+    }
+
+    function copyAllValid() {
+        const validUrls = state.bulkResults
+            .filter(r => r.status === 'valid')
+            .map(r => r.converted)
+            .join('\n');
+            
+        if (!validUrls) {
+            showToast('No valid URLs to copy');
+            return;
+        }
+        copyToClipboard(validUrls);
+    }
+
+    function downloadExport(format) {
+        const validData = state.bulkResults.filter(r => r.status === 'valid');
+        if (validData.length === 0) {
+            showToast('No valid data to export');
+            return;
+        }
+
+        let content = '';
+        let mimeType = '';
+        let fileName = `epg_export.${format}`;
+
+        if (format === 'txt') {
+            content = validData.map(r => r.converted).join('\n');
+            mimeType = 'text/plain;charset=utf-8';
+        } else if (format === 'csv') {
+            // CSV Header
+            content = 'Source URL,Generated EPG\n';
+            validData.forEach(r => {
+                // Escape quotes for CSV standard
+                const src = `"${r.original.replace(/"/g, '""')}"`;
+                const dest = `"${r.converted.replace(/"/g, '""')}"`;
+                content += `${src},${dest}\r\n`;
+            });
+            mimeType = 'text/csv;charset=utf-8';
+        } else if (format === 'json') {
+            content = JSON.stringify(validData, null, 2);
+            mimeType = 'application/json;charset=utf-8';
+        }
+
+        try {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            
+            // Trigger click
+            a.click();
+            
+            // Clean up
+            setTimeout(() => {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }, 0);
+            
+            showToast(`Downloaded ${fileName}`);
+        } catch (e) {
+            console.error('Export failed:', e);
+            showToast('Export failed. See console.');
+        }
+    }
+
+    /* --- UTILS --- */
+
+    function switchTab(tabName) {
+        const singleSection = document.getElementById('single-section');
+        const bulkSection = document.getElementById('bulk-section');
+        const btns = document.querySelectorAll('.tab-btn');
+
+        btns.forEach(b => b.classList.remove('active'));
+
+        if (tabName === 'single') {
+            singleSection.classList.remove('hidden');
+            bulkSection.classList.add('hidden');
+            btns[0].classList.add('active');
+        } else {
+            singleSection.classList.add('hidden');
+            bulkSection.classList.remove('hidden');
+            btns[1].classList.add('active');
+        }
+    }
+
+    function setLoading(btnElement, isLoading) {
+        const textSpan = btnElement.querySelector('.btn-text');
+        const spinner = btnElement.querySelector('.spinner');
+        
+        if (isLoading) {
+            btnElement.disabled = true;
+            textSpan.style.display = 'none';
+            spinner.style.display = 'block';
+        } else {
+            btnElement.disabled = false;
+            textSpan.style.display = 'inline';
+            spinner.style.display = 'none';
+        }
+    }
+
+    function copyToClipboard(text) {
+        if (!text) return;
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('Copied to clipboard!');
+        }).catch(err => {
+            showToast('Failed to copy');
+            console.error('Copy failed', err);
+        });
+    }
+
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        const msgSpan = document.getElementById('toast-msg');
+        msgSpan.innerText = msg;
+        toast.classList.add('show');
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+
+    function truncate(str, n) {
+        return (str.length > n) ? str.substr(0, n-1) + '...' : str;
+    }
+</script>
+
+</body>
+</html>
