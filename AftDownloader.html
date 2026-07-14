@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Downloader Link Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#0b111e',
+                        darkcard: '#172033',
+                        darkinput: '#243147',
+                        lightbg: '#f0f4f8',
+                        lightcard: '#ffffff',
+                        lightinput: '#e8edf3',
+                        brand: '#3b82f6'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-lightbg dark:bg-darkbg text-slate-800 dark:text-slate-200 transition-colors duration-300 min-h-screen font-sans flex justify-center p-3 sm:p-6">
+
+    <div class="w-full max-w-2xl mt-8">
+
+        <div class="flex items-center justify-between gap-2 mb-6 w-full">
+            <div class="flex-1 min-w-0">
+                <h1 class="text-xl sm:text-2xl font-bold text-brand flex items-center gap-2 truncate">
+                    <i class="fa-solid fa-download shrink-0"></i> Downloader Link Generator
+                </h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate" style="margin-left: 28px;">Create aftv.news download links instantly</p>
+            </div>
+
+            <div class="bg-white dark:bg-darkinput rounded-full p-1 shadow-sm border border-slate-200 dark:border-slate-700 flex gap-1 cursor-pointer shrink-0" onclick="toggleTheme()">
+                <div id="btn-light" class="w-7 h-7 rounded-full flex items-center justify-center bg-brand text-white transition-colors">
+                    <i class="fa-solid fa-sun text-xs"></i>
+                </div>
+                <div id="btn-dark" class="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 transition-colors">
+                    <i class="fa-solid fa-moon text-xs"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-lightcard dark:bg-darkcard rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700/60">
+
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-brand rounded-xl mx-auto flex items-center justify-center mb-4 shadow-lg">
+                    <i class="fa-solid fa-bolt text-white text-2xl"></i>
+                </div>
+                <h2 class="text-lg font-bold text-slate-800 dark:text-white">Fast Downloader Link</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Enter the download code to generate an aftv.news link</p>
+            </div>
+
+            <label class="block text-xs font-semibold mb-1 text-slate-500">Download Code</label>
+            <input type="number" id="code" placeholder="e.g. 12345" 
+                class="w-full bg-lightinput dark:bg-darkinput rounded-xl p-3 mb-5 outline-none font-mono text-xs sm:text-sm border border-transparent focus:border-brand/40 transition-all text-center text-lg tracking-widest">
+
+            <button onclick="generateLink()" class="w-full bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold py-3 rounded-xl transition-colors mb-5 text-xs sm:text-sm shadow-sm">
+                Generate Link
+            </button>
+
+            <div id="resultArea" class="hidden opacity-0 transition-opacity duration-500">
+                <div class="bg-lightinput dark:bg-darkinput rounded-xl p-4 border border-slate-200 dark:border-slate-700/60 mb-4">
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Final Link:</p>
+                    <a id="finalLinkDisplay" href="#" target="_blank" class="text-brand hover:text-blue-400 break-all font-mono text-xs sm:text-sm"></a>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="copyToClipboard()" class="flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-700 p-3 rounded-xl transition-colors">
+                        <i class="fa-regular fa-copy text-slate-700 dark:text-slate-200 text-lg mb-1"></i>
+                        <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">Copy</span>
+                    </button>
+
+                    <button onclick="openLink()" class="flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-700 p-3 rounded-xl transition-colors">
+                        <i class="fa-solid fa-arrow-up-right-from-square text-green-500 text-lg mb-1"></i>
+                        <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">Open</span>
+                    </button>
+
+                    <button onclick="shareLink()" class="flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-700 p-3 rounded-xl transition-colors">
+                        <i class="fa-solid fa-share-nodes text-brand text-lg mb-1"></i>
+                        <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">Share</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="toast" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-darkcard text-white px-6 py-3 rounded-full shadow-xl border border-slate-600 text-sm hidden z-50 transition-opacity duration-300">
+        Link copied successfully!
+    </div>
+
+    <script>
+        // --- Theme Management ---
+        let isDark = false;
+        function toggleTheme() {
+            const htmlNode = document.documentElement;
+            const btnLight = document.getElementById('btn-light');
+            const btnDark = document.getElementById('btn-dark');
+            isDark = !isDark;
+
+            if (isDark) {
+                htmlNode.classList.add('dark');
+                btnDark.classList.add('bg-brand', 'text-white');
+                btnDark.classList.remove('text-slate-400');
+                btnLight.classList.remove('bg-brand', 'text-white');
+                btnLight.classList.add('text-slate-400');
+            } else {
+                htmlNode.classList.remove('dark');
+                btnLight.classList.add('bg-brand', 'text-white');
+                btnLight.classList.remove('text-slate-400');
+                btnDark.classList.remove('bg-brand', 'text-white');
+                btnDark.classList.add('text-slate-400');
+            }
+        }
+
+        let currentUrl = '';
+
+        function generateLink() {
+            const codeInput = document.getElementById('code').value.trim();
+            const resultArea = document.getElementById('resultArea');
+            const displayLink = document.getElementById('finalLinkDisplay');
+
+            if (!codeInput) {
+                showToast('Please enter a valid code', 'bg-red-600');
+                return;
+            }
+
+            currentUrl = `http://aftv.news/${codeInput}`;
+
+            displayLink.textContent = currentUrl;
+            displayLink.href = currentUrl;
+
+            resultArea.classList.remove('hidden');
+            setTimeout(() => {
+                resultArea.classList.remove('opacity-0');
+            }, 10);
+        }
+
+        async function copyToClipboard() {
+            if (!currentUrl) return;
+            try {
+                await navigator.clipboard.writeText(currentUrl);
+                showToast('Link copied successfully!');
+            } catch (err) {
+                showToast('Copy failed, try manually', 'bg-red-600');
+            }
+        }
+
+        function openLink() {
+            if (!currentUrl) return;
+            window.open(currentUrl, '_blank');
+        }
+
+        async function shareLink() {
+            if (!currentUrl) return;
+
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'Downloader Link',
+                        text: 'Here is your direct download link:',
+                        url: currentUrl
+                    });
+                } catch (err) {
+                    console.log('Error sharing:', err);
+                }
+            } else {
+                copyToClipboard();
+                showToast('Sharing not supported, link copied instead');
+            }
+        }
+
+        function showToast(message, bgColor = 'bg-darkcard') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `fixed bottom-5 left-1/2 transform -translate-x-1/2 text-white px-6 py-3 rounded-full shadow-xl border border-slate-600 text-sm z-50 transition-opacity duration-300 ${bgColor}`;
+
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        document.getElementById('code').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                generateLink();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Xtream Code Tools</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#0b111e',
+                        darkcard: '#172033',
+                        darkinput: '#243147',
+                        lightbg: '#f0f4f8',
+                        lightcard: '#ffffff',
+                        lightinput: '#e8edf3',
+                        brand: '#3b82f6'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Hide scrollbar for tab navigation on mobile while keeping native swipe-scrolling */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-lightbg dark:bg-darkbg text-slate-800 dark:text-slate-200 transition-colors duration-300 min-h-screen font-sans flex justify-center p-3 sm:p-6">
+
+    <div class="w-full max-w-2xl mt-8">
+        
+        <div class="flex items-center justify-between gap-2 mb-6 w-full">
+            <div class="flex-1 min-w-0">
+                <h1 class="text-xl sm:text-2xl font-bold text-brand flex items-center gap-2 truncate">
+                    <i class="fa-solid fa-bolt shrink-0"></i> Xtream Code Tools
+                </h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate" style="margin-left: 28px;">IPTV Utility By MM pRoF</p>
+            </div>
+            
+            <div class="bg-white dark:bg-darkinput rounded-full p-1 shadow-sm border border-slate-200 dark:border-slate-700 flex gap-1 cursor-pointer shrink-0" onclick="toggleTheme()">
+                <div id="btn-light" class="w-7 h-7 rounded-full flex items-center justify-center bg-brand text-white transition-colors">
+                    <i class="fa-solid fa-sun text-xs"></i>
+                </div>
+                <div id="btn-dark" class="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 transition-colors">
+                    <i class="fa-solid fa-moon text-xs"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-lightcard dark:bg-darkcard rounded-xl p-1.5 shadow-sm border border-slate-200 dark:border-slate-700/60 mb-5 flex gap-1 overflow-x-auto no-scrollbar snap-x">
+            <button onclick="switchTab(1)" id="tab-btn-1" class="tab-btn flex-1 min-w-[100px] whitespace-nowrap snap-center py-2.5 text-xs font-semibold rounded-lg bg-lightinput dark:bg-darkinput text-slate-800 dark:text-white transition-all duration-200">Merge to M3U</button>
+            <button onclick="switchTab(2)" id="tab-btn-2" class="tab-btn flex-1 min-w-[75px] whitespace-nowrap snap-center py-2.5 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-white transition-all duration-200">Split M3U</button>
+            <button onclick="switchTab(3)" id="tab-btn-3" class="tab-btn flex-1 min-w-[75px] whitespace-nowrap snap-center py-2.5 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-white transition-all duration-200">TS to M3U</button>
+            <button onclick="switchTab(4)" id="tab-btn-4" class="tab-btn flex-1 min-w-[95px] whitespace-nowrap snap-center py-2.5 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-white transition-all duration-200">M3U to EPG</button>
+        </div>
+
+        <div id="tab-1" class="tab-content bg-lightcard dark:bg-darkcard rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700/60">
+            <label class="block text-xs font-semibold mb-1 text-slate-500">Host URL</label>
+            <input type="text" id="merge-host" placeholder="http://example.com:8080" class="w-full bg-lightinput dark:bg-darkinput rounded-xl p-3 mb-3.5 outline-none font-mono text-xs sm:text-sm border border-transparent focus:border-brand/40 transition-all">
+            
+            <label class="block text-xs font-semibold mb-1 text-slate-500">Username</label>
+            <input type="text" id="merge-user" placeholder="username" class="w-full bg-lightinput dark:bg-darkinput rounded-xl p-3 mb-3.5 outline-none font-mono text-xs sm:text-sm border border-transparent focus:border-brand/40 transition-all">
+            
+            <label class="block text-xs font-semibold mb-1 text-slate-500">Password</label>
+            <input type="text" id="merge-pass" placeholder="password" class="w-full bg-lightinput dark:bg-darkinput rounded-xl p-3 mb-5 outline-none font-mono text-xs sm:text-sm border border-transparent focus:border-brand/40 transition-all">
+            
+            <button onclick="mergeLogic()" class="w-full bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold py-3 rounded-xl transition-colors mb-4 text-xs sm:text-sm shadow-sm">Generate Xtream Code</button>
+            
+            <textarea id="merge-out" readonly class="w-full bg-lightinput dark:bg-darkinput rounded-xl p-3 h-20 outline-none font-mono text-xs sm:text-sm resize-none mb-3.5 border border-transparent" placeholder="Result will appear here..."></textarea>
+            
+            <div class="flex gap-2">
+                <button onclick="copyData('merge-out', event)" class="flex-1 bg-brand text-white py-2.5 rounded-xl text-xs sm:text-sm font-semibold hover:bg-blue-600 transition-colors shadow-sm"><i class="fa-regular fa-copy mr-1"></i>Copy</button>
+                <button onclick="shareData('merge-out')" class="flex-1 bg-brand text-white py-2.5 rounded-xl text-xs sm:text-sm font-semibold hover:bg-blue-600 transition-colors shadow-sm"><i class="fa-solid fa-share-nodes mr-1"></i>Share</button>
+            </div>
+        </div>
+
+        <div id="tab-2" class="tab-content hidden bg-lightcard dark:bg-darkcard rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700/60">
+            <label class="block text-xs font-semibold mb-1 text-slate-500">Xtream M3U URL</label>
+            <input type="text" id="split-in" placeholder="http://example.com:8080/get.php?username=...&password=..." class="w-full bg-lightinput dark:bg-darkinput rounded-xl p-3 mb-4 outline-none font-mono text-xs sm:text-sm border border-transparent focus:border-brand/40 transition-all">
+            
+            <button onclick="splitLogic()" class="w-full bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold py-3 rounded-xl transition-colors mb-5 text-xs sm:text-sm shadow-sm">Split URL</button>
+            
+            <div class="space-y-3.5">
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-500">Extracted Host</label>
+                    <div class="flex gap-1.5">
+                        <input type="text" id="split-out-host" readonly class="w-full min-w-0 bg-lightinput dark:bg-darkinput rounded-xl p-3 outline-none font-mono text-xs sm:text-sm border border-transparent">
+                        <button onclick="copyData('split-out-host', event)" class="bg-slate-200 dark:bg-slate-700 p-3 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors shrink-0"><i class="fa-regular fa-copy"></i></button>
+                        <button onclick="shareData('split-out-host')" class="bg-brand text-white p-3 rounded-xl hover:bg-blue-600 transition-colors shrink-0"><i class="fa-solid fa-share-nodes"></i></button>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-500">Extracted Username</label>
+                    <div class="flex gap-1.5">
+                        <input type="text" id="split-out-user" readonly class="w-full min-w-0 bg-lightinput dark:bg-darkinput rounded-xl p-3 outline-none font-mono text-xs sm:text-sm border border-transparent">
+                        <button onclick="copyData('split-out-user', event)" class="bg-slate-200 dark:bg-slate-700 p-3 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors shrink-0"><i class="fa-regular fa-copy"></i></button>
+                        <button onclick="shareData('split-out-user')" class="bg-brand text-white p-3 rounded-xl hover:bg-blue-600 transition-colors shrink-0"><i class="fa-solid fa-share-nodes"></i></button>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-500">Extracted Password</label>
+                    <div class="flex gap-1.5">
+                        <input type="text" id="split-out-pass" readonly class="w-full min-w-0 bg-lightinput dark:bg-darkinput rounded-xl p-3 outline-none font-mono text-xs sm:text-sm border border-transparent">
+                        <button onclick="copyData('split-out-pass', event)" class="bg-slate-200 dark:bg-slate-700 p-3 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors shrink-0"><i class="fa-regular fa-copy"></i></button>
+                        <button onclick="shareData('split-out-pass')" class="bg-brand text-white p-3 rounded-xl hover:bg-blue-600 transition-colors shrink-0"><i class="fa-solid fa-share-nodes"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-3" class="tab-content hidden bg-lightcard dark:bg-darkcard rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700/60">
+            <label class="block text-xs font-semibold mb-1 text-slate-500">Direct IPTV TS URL</label>
+            <input type="text" id="ts-in" placeholder="http://example.com:8080/live/user/pass/1234.ts" class="w-full bg-lightinput dark:bg-darkinput rounded-xl p-3 mb-4 outline-none font-mono text-xs sm:text-sm border border-transparent focus:border-brand/40 transition-all">
+            
+            <button onclick="tsLogic()" class="w-full bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold py-3 rounded-xl transition-colors mb-4 text-xs sm:text-sm shadow-sm">Convert to Xtream Code</button>
+            
+            <textarea id="ts-out" readonly class="w-full bg-lightinput dark:bg-darkinput rounded-xl p-3 h-20 outline-none font-mono text-xs sm:text-sm resize-none mb-3.5 border border-transparent" placeholder="Converted Xtream code will appear here..."></textarea>
+            
+            <div class="flex gap-2">
+                <button onclick="copyData('ts-out', event)" class="flex-1 bg-brand text-white py-2.5 rounded-xl text-xs sm:text-sm font-semibold hover:bg-blue-600 transition-colors shadow-sm"><i class="fa-regular fa-copy mr-1"></i> Copy</button>
+                <button onclick="shareData('ts-out')" class="flex-1 bg-brand text-white py-2.5 rounded-xl text-xs sm:text-sm font-semibold hover:bg-blue-600 transition-colors shadow-sm"><i class="fa-solid fa-share-nodes mr-1"></i> Share</button>
+            </div>
+        </div>
+
+        <div id="tab-4" class="tab-content hidden bg-lightcard dark:bg-darkcard rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700/60">
+            <label class="block text-xs font-semibold mb-1 text-slate-500">Xtream M3U URL</label>
+            <input type="text" id="epg-in" placeholder="http://example.com:8080/get.php?username=...&password=..." class="w-full bg-lightinput dark:bg-darkinput rounded-xl p-3 mb-4 outline-none font-mono text-xs sm:text-sm border border-transparent focus:border-brand/40 transition-all">
+            
+            <button onclick="epgLogic()" class="w-full bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold py-3 rounded-xl transition-colors mb-4 text-xs sm:text-sm shadow-sm">Generate EPG URL</button>
+            
+            <textarea id="epg-out" readonly class="w-full bg-lightinput dark:bg-darkinput rounded-xl p-3 h-20 outline-none font-mono text-xs sm:text-sm resize-none mb-3.5 border border-transparent" placeholder="XMLTV EPG URL will appear here..."></textarea>
+            
+            <div class="flex gap-2">
+                <button onclick="copyData('epg-out', event)" class="flex-1 bg-brand text-white py-2.5 rounded-xl text-xs sm:text-sm font-semibold hover:bg-blue-600 transition-colors shadow-sm"><i class="fa-regular fa-copy mr-1"></i> Copy</button>
+                <button onclick="shareData('epg-out')" class="flex-1 bg-brand text-white py-2.5 rounded-xl text-xs sm:text-sm font-semibold hover:bg-blue-600 transition-colors shadow-sm"><i class="fa-solid fa-share-nodes mr-1"></i> Share</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Theme Management ---
+        let isDark = false;
+        function toggleTheme() {
+            const htmlNode = document.documentElement;
+            const btnLight = document.getElementById('btn-light');
+            const btnDark = document.getElementById('btn-dark');
+            isDark = !isDark;
+            
+            if (isDark) {
+                htmlNode.classList.add('dark');
+                btnDark.classList.add('bg-brand', 'text-white');
+                btnDark.classList.remove('text-slate-400');
+                btnLight.classList.remove('bg-brand', 'text-white');
+                btnLight.classList.add('text-slate-400');
+            } else {
+                htmlNode.classList.remove('dark');
+                btnLight.classList.add('bg-brand', 'text-white');
+                btnLight.classList.remove('text-slate-400');
+                btnDark.classList.remove('bg-brand', 'text-white');
+                btnDark.classList.add('text-slate-400');
+            }
+        }
+
+        // --- Tab Management ---
+        function switchTab(tabIndex) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('bg-lightinput', 'dark:bg-darkinput', 'text-slate-800', 'dark:text-white');
+                el.classList.add('text-slate-500');
+            });
+            document.getElementById(`tab-${tabIndex}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-btn-${tabIndex}`);
+            activeBtn.classList.remove('text-slate-500');
+            activeBtn.classList.add('bg-lightinput', 'dark:bg-darkinput', 'text-slate-800', 'dark:text-white');
+        }
+
+        // --- Auto-Fix Format Helpers ---
+        function cleanUrlInput(input) {
+            let str = input.trim();
+            if (!str) return '';
+            if (!/^https?:\/\//i.test(str)) {
+                str = 'http://' + str;
+            }
+            return str;
+        }
+
+        // --- App Processing Core ---
+        function mergeLogic() {
+            let host = document.getElementById('merge-host').value.trim();
+            const user = document.getElementById('merge-user').value.trim();
+            const pass = document.getElementById('merge-pass').value.trim();
+            
+            if(!host || !user || !pass) return alert("Please fill out Host, Username, and Password.");
+            if(!/^https?:\/\//i.test(host)) host = 'http://' + host;
+            if(host.endsWith('/')) host = host.slice(0, -1);
+            
+            document.getElementById('merge-out').value = `${host}/get.php?username=${user}&password=${pass}&type=m3u_plus&output=ts`;
+        }
+
+        function splitLogic() {
+            const rawUrl = document.getElementById('split-in').value;
+            const urlStr = cleanUrlInput(rawUrl);
+            if(!urlStr) return alert("Please enter a URL to split.");
+            
+            try {
+                const url = new URL(urlStr);
+                document.getElementById('split-out-host').value = url.origin;
+                document.getElementById('split-out-user').value = url.searchParams.get('username') || '';
+                document.getElementById('split-out-pass').value = url.searchParams.get('password') || '';
+            } catch (e) {
+                alert("Could not process layout structure. Format must include parameters (?username=...&password=...)");
+            }
+        }
+
+        function tsLogic() {
+            const rawTs = document.getElementById('ts-in').value;
+            const tsStr = cleanUrlInput(rawTs);
+            if(!tsStr) return alert("Please enter a valid TS link.");
+            
+            const regex = /^(https?:\/\/[^\/]+)(?:\/live)?\/([^\/]+)\/([^\/]+)\/.*$/;
+            const match = tsStr.match(regex);
+            
+            if (match) {
+                document.getElementById('ts-out').value = `${match[1]}/get.php?username=${match[2]}&password=${match[3]}&type=m3u_plus&output=ts`;
+            } else {
+                alert("Format structure unrecognized. Use style: http://domain:port/live/user/pass/stream.ts");
+            }
+        }
+
+        function epgLogic() {
+            const rawM3u = document.getElementById('epg-in').value;
+            const m3uStr = cleanUrlInput(rawM3u);
+            if(!m3uStr) return alert("Please enter an M3U link.");
+            
+            try {
+                const url = new URL(m3uStr);
+                const user = url.searchParams.get('username');
+                const pass = url.searchParams.get('password');
+                
+                if (user && pass) {
+                    document.getElementById('epg-out').value = `${url.origin}/xmltv.php?username=${user}&password=${pass}`;
+                } else {
+                    alert("Unable to pinpoint username or password fields inside query.");
+                }
+            } catch (e) {
+                alert("Invalid configuration link structure.");
+            }
+        }
+
+        // --- Native System Integrations ---
+        async function copyData(elementId, e) {
+            const inputElement = document.getElementById(elementId);
+            const text = inputElement.value;
+            if(!text) return;
+
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(text);
+                } else {
+                    inputElement.select();
+                    document.execCommand('copy');
+                }
+                const btn = e.currentTarget;
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-check text-green-500 animate-pulse"></i>';
+                setTimeout(() => btn.innerHTML = originalHTML, 1200);
+            } catch (err) {
+                alert("Environment restriction blocked copying. Select textual area inside component to fetch manually.");
+            }
+        }
+
+        async function shareData(elementId) {
+            const text = document.getElementById(elementId).value;
+            if(!text) return;
+            
+            if (navigator.share) {
+                try {
+                    await navigator.share({ title: 'Xtream Field Info Output', text: text });
+                } catch (err) {
+                    console.log('Action dismissed', err);
+                }
+            } else {
+                alert("Native System Web Sharing rejected. Access app via Secure Server context (HTTPS / Localhost) to authorize.");
+            }
+        }
+    </script>
+</body>
+</html>
